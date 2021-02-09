@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import csv
 import os.path
 
+custom_additional_time = timedelta(minutes=1646)
+
 def print_time(action: str):
     current_datetime = datetime.now()
     date_string = current_datetime.strftime("%Y/%m/%d")
@@ -15,6 +17,7 @@ def print_time(action: str):
     
 
 def calculate_delta_work_time(minutes_per_day: int):
+    accumulated_time = timedelta()
     with open('work_time.csv', mode='r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         start_row = [None] * 3
@@ -22,10 +25,10 @@ def calculate_delta_work_time(minutes_per_day: int):
         line_count = 0
         for row in csv_reader:
             if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
+                #print(f'Column names are {", ".join(row)}')
                 line_count += 1
             else:
-                print(f'\t{row[0]} {row[1]} {row[2]}')
+                #print(f'\t{row[0]} {row[1]} {row[2]}')
                 if row[2] == "start":
                     start_row = row
                 elif row[2] == "end":
@@ -37,9 +40,17 @@ def calculate_delta_work_time(minutes_per_day: int):
                     time_worked = (end_time - start_time)
                     print("\tTime worked: {}".format(time_worked))
                     delta_working_time = time_worked - timedelta(minutes=minutes_per_day)
-                    print("\tOver-/Underhours: {}".format(delta_working_time))
+                    print("\tOver-/Underhours: {}\n".format(delta_working_time))
+                    accumulated_time += delta_working_time
 
                 line_count += 1
+    
+    print("Accumulted time: {}".format(accumulated_time))
+    print("Custom added: {}".format(custom_additional_time))
+    total_accumulated = accumulated_time + custom_additional_time
+    hours = total_accumulated.days * 24 + total_accumulated.seconds//3600
+    minutes = (total_accumulated.seconds % 3600) // 60
+    print("Total accumulted time: {}:{}".format(hours, minutes))
 
 
 parser = argparse.ArgumentParser()
